@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useTasks } from './hooks/useTasks'
 import './App.css'
 
 const CATEGORIES = ['仕事', 'プライベート', '副業']
@@ -23,6 +24,19 @@ function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr + 'T00:00:00')
   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
+}
+
+const SYNC_LABELS = {
+  local:   { text: 'ローカル保存', cls: 'sync-local' },
+  loading: { text: '読み込み中…', cls: 'sync-loading' },
+  syncing: { text: '同期中…',     cls: 'sync-loading' },
+  synced:  { text: '同期済み ✓',  cls: 'sync-ok' },
+  error:   { text: '同期エラー',  cls: 'sync-error-badge' },
+}
+
+function SyncBadge({ status }) {
+  const { text, cls } = SYNC_LABELS[status] ?? SYNC_LABELS.local
+  return <span className={`sync-badge ${cls}`}>{text}</span>
 }
 
 function TaskForm({ onAdd }) {
@@ -143,31 +157,13 @@ function CategoryStats({ tasks }) {
 }
 
 export default function App() {
-  const [tasks, setTasks] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('tasks') || '[]')
-    } catch {
-      return []
-    }
-  })
+  const { tasks, syncStatus, syncError, addTask, toggleTask, deleteTask: deleteFromDB } = useTasks()
   const [filterCategory, setFilterCategory] = useState('すべて')
   const [filterStatus, setFilterStatus] = useState('すべて')
 
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks))
-  }, [tasks])
-
-  function addTask(task) {
-    setTasks(prev => [task, ...prev])
-  }
-
-  function toggleTask(id) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
-  }
-
   function deleteTask(id) {
     if (!window.confirm('このタスクを削除しますか？')) return
-    setTasks(prev => prev.filter(t => t.id !== id))
+    deleteFromDB(id)
   }
 
   const filtered = tasks.filter(t => {
@@ -186,10 +182,12 @@ export default function App() {
       <header className="app-header">
         <div className="header-top">
           <h1 className="app-title">📋 タスク管理</h1>
-          <div className="header-summary">
-            <span>{totalDone} / {tasks.length} 件完了</span>
+          <div className="header-right">
+            <SyncBadge status={syncStatus} />
+            <div className="header-summary">{totalDone} / {tasks.length} 件完了</div>
           </div>
         </div>
+        {syncError && <div className="sync-error">同期エラー: {syncError}</div>}
         {overdueCount > 0 && (
           <div className="overdue-alert">⚠️ 期限切れのタスクが {overdueCount} 件あります</div>
         )}

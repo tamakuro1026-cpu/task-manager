@@ -63,10 +63,42 @@ body {
   letter-spacing: -0.02em;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .header-summary {
   font-size: 14px;
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+.sync-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.sync-local       { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.sync-loading     { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+.sync-ok          { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.sync-error-badge { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+.sync-error {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--overdue);
+  font-size: 12px;
 }
 
 .overdue-alert {
