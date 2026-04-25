@@ -33,7 +33,7 @@ function taskToRow(task) {
     start_date: task.startDate || null,
     due_date: task.dueDate || null,
     completed: task.completed,
-    created_at: task.createdAt,
+    
   }
 }
 
